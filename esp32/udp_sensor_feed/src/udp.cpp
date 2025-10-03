@@ -24,8 +24,8 @@ void setupUdp() {
     udp.begin(udpPort);
 }
 
-void sendUdpPacket(const char* message) {
+void sendUdpPacket(const uint8_t* data, size_t len) {
     udp.beginPacket(udpAddress, udpPort);
-    udp.print(message);
+    udp.write(data, len);
     udp.endPacket();
 }

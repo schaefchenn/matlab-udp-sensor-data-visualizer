@@ -7,4 +7,4 @@
 extern Adafruit_BNO055 bno;
 
 void setupBNO055();
-String readBNO055Data();
+void readBNO055Data(float *data);

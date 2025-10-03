@@ -11,4 +11,4 @@ extern WiFiUDP udp;
 
 void connectToWiFi();
 void setupUdp();
-void sendUdpPacket(const char* message);
+void sendUdpPacket(const uint8_t* data, size_t len);

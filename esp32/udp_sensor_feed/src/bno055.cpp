@@ -17,17 +17,16 @@ void setupBNO055() {
   Serial.println("Sensor initialisiert.");
 }
 
-String readBNO055Data() {
+void readBNO055Data(float *data) {
   sensors_event_t event;
   bno.getEvent(&event);
 
   imu::Vector<3> accel = bno.getVector(Adafruit_BNO055::VECTOR_ACCELEROMETER);
 
-  String data = String(event.orientation.x, 2) +
-                ";" + String(event.orientation.y, 2) +
-                ";" + String(event.orientation.z, 2) +
-                ";" + String(accel.x(), 2) +
-                ";" + String(accel.y(), 2) +
-                ";" + String(accel.z(), 2);
-  return data;
+  data[0] = event.orientation.x;
+  data[1] = event.orientation.y;
+  data[2] = event.orientation.z;
+  data[3] = accel.x();
+  data[4] = accel.y();
+  data[5] = accel.z();
 }

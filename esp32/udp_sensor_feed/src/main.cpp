@@ -4,7 +4,7 @@
 
 #define RINGBUFFER_SIZE 28
 
-String ringBuffer[RINGBUFFER_SIZE];
+float ringBuffer[RINGBUFFER_SIZE][7]; // [timestamp, roll, pitch, yaw, accel_x, accel_y, accel_z]
 volatile int writeIndex = 0;
 volatile bool firstHalfReady = false;
 
@@ -22,18 +22,23 @@ void UDP (void * pvParameters){
   int readIndex = 0;
   while (1){
     if (readIndex != writeIndex) {
-      String msg = ringBuffer[readIndex] + "\n";
-      sendUdpPacket(msg.c_str());
+      sendUdpPacket((uint8_t*)ringBuffer[readIndex], sizeof(float) * 7);
       readIndex = (readIndex + 1) % RINGBUFFER_SIZE;
     }
-    vTaskDelay(1 / portTICK_PERIOD_MS); // kleine Pause
+    vTaskDelay(1 / portTICK_PERIOD_MS);
   }
 }
 
 void SENSOR (void * pvParameters){
   while (1){
     float timestamp = (millis() - millisOffset) / 1000.0;
-    ringBuffer[writeIndex] = String(timestamp, 3) + ";" + readBNO055Data();
+    float sensorValues[6];
+    readBNO055Data(sensorValues);
+
+    ringBuffer[writeIndex][0] = timestamp;
+    for (int i = 0; i < 6; i++) {
+      ringBuffer[writeIndex][i + 1] = sensorValues[i];
+    }
     writeIndex = (writeIndex + 1) % RINGBUFFER_SIZE;
     vTaskDelay(10 / portTICK_PERIOD_MS); // 100Hz
   }
