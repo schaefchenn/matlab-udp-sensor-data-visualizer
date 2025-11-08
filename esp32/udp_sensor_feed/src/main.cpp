@@ -47,6 +47,7 @@ void SENSOR (void * pvParameters){
 void setup() {
   // Initialize serial communication at 115200 baud rate
   Serial.begin(115200);
+  Serial.println("Starting...");
 
   // Wait a moment to start (so we don't miss Serial output)
   vTaskDelay(2000 / portTICK_PERIOD_MS);
@@ -66,7 +67,7 @@ void setup() {
                           8192,                                         // Increased stack size
                           NULL,                                         // Parameter to pass to function
                           2,                                            // Increased priority
-                          NULL,                                         // Task handle
+                          &Task1,                                         // Task handle
                           app_cpu);
 
   // Start CANcommunication (priority set to 1, 0 is the lowest priority)
@@ -75,8 +76,8 @@ void setup() {
                           8192,                                         // Increased stack size
                           NULL,                                         // Parameter to pass to function
                           2,                                            // Increased priority
-                          NULL,                                         // Task handle
-                          app_cpu);                                     // Assign to protocol core 
+                          &Task2,                                       // Task handle
+                          app_cpu);                                     // Assign to protocol core  
 }
 
 void loop() {
