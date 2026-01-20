@@ -20,12 +20,14 @@ TaskHandle_t Task2;
 
 void UDP (void * pvParameters){
   int readIndex = 0;
+
+  Serial.println("Client connected — starting UDP stream");
   while (1){
     if (readIndex != writeIndex) {
       sendUdpPacket((uint8_t*)ringBuffer[readIndex], sizeof(float) * 7);
       readIndex = (readIndex + 1) % RINGBUFFER_SIZE;
     }
-    vTaskDelay(1 / portTICK_PERIOD_MS);
+    vTaskDelay(5 / portTICK_PERIOD_MS);
   }
 }
 
@@ -40,7 +42,7 @@ void SENSOR (void * pvParameters){
       ringBuffer[writeIndex][i + 1] = sensorValues[i];
     }
     writeIndex = (writeIndex + 1) % RINGBUFFER_SIZE;
-    vTaskDelay(1 / portTICK_PERIOD_MS); // 100Hz
+    vTaskDelay(20 / portTICK_PERIOD_MS); // 50 Hz
   }
 }
 
@@ -68,7 +70,7 @@ void setup() {
                           NULL,                                         // Parameter to pass to function
                           2,                                            // Increased priority
                           &Task1,                                         // Task handle
-                          app_cpu);
+                          pro_cpu);
 
   // Start CANcommunication (priority set to 1, 0 is the lowest priority)
   xTaskCreatePinnedToCore(SENSOR,                                       // Function to be called
