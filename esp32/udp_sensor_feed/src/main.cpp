@@ -40,7 +40,7 @@ void SENSOR (void * pvParameters){
       ringBuffer[writeIndex][i + 1] = sensorValues[i];
     }
     writeIndex = (writeIndex + 1) % RINGBUFFER_SIZE;
-    vTaskDelay(10 / portTICK_PERIOD_MS); // 100Hz
+    vTaskDelay(1 / portTICK_PERIOD_MS); // 100Hz
   }
 }
 
@@ -54,7 +54,7 @@ void setup() {
   Serial.println("Starting...");
   pinMode(LED_BUILTIN, OUTPUT);
   setupBNO055();
-  connectToWiFi();
+  setupWiFiAP();
   setupUdp();
   
   digitalWrite(LED_BUILTIN, HIGH);

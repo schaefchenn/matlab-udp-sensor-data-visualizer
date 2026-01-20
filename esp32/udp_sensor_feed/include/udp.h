@@ -9,6 +9,6 @@ extern const char* udpAddress;
 extern const int udpPort;
 extern WiFiUDP udp;
 
-void connectToWiFi();
+void setupWiFiAP();
 void setupUdp();
 void sendUdpPacket(const uint8_t* data, size_t len);
