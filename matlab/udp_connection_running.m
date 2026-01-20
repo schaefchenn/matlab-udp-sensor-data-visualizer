@@ -1,6 +1,5 @@
 clc;
 delete(udpportfind("Type","udpport"))
-clear u
 
 localPort = 5005;
 packetSize = 7 * 4; % 7 floats à 4 Bytes = 28 Bytes
@@ -10,29 +9,33 @@ disp("Warte auf Daten...");
 
 % Speicher für Plot
 bufferLen = 2000; % wie viele Samples im Plot sichtbar sind
-timestamps = nan(1, bufferLen);
-rolls  = nan(1, bufferLen);
-pitches= nan(1, bufferLen);
-yaws   = nan(1, bufferLen);
-axVals = nan(1, bufferLen);
-ayVals = nan(1, bufferLen);
-azVals = nan(1, bufferLen);
+timestamps = zeros(1, bufferLen);
+rolls  = zeros(1, bufferLen);
+pitches= zeros(1, bufferLen);
+yaws   = zeros(1, bufferLen);
+axVals = zeros(1, bufferLen);
+ayVals = zeros(1, bufferLen);
+azVals = zeros(1, bufferLen);
 
 % Figuren und Plots vorbereiten
 figure;
 tiledlayout(2,1);
 
-% Orientierung
 nexttile;
-h1 = plot(nan, nan, '-r', nan, nan, '-g', nan, nan, '-b');
+hold on;
+h1(1) = plot(timestamps, rolls, '-r');
+h1(2) = plot(timestamps, pitches, '-g');
+h1(3) = plot(timestamps, yaws, '-b');
 legend('Roll','Pitch','Yaw');
 xlabel('Zeit [s]');
 ylabel('Winkel [°]');
 grid on;
 
-% Beschleunigung
 nexttile;
-h2 = plot(nan, nan, '-r', nan, nan, '-g', nan, nan, '-b');
+hold on;
+h2(1) = plot(timestamps, axVals, '-r');
+h2(2) = plot(timestamps, ayVals, '-g');
+h2(3) = plot(timestamps, azVals, '-b');
 legend('ax','ay','az');
 xlabel('Zeit [s]');
 ylabel('Beschleunigung [m/s^2]');

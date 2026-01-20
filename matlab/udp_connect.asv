@@ -1,0 +1,12 @@
+clc; clear;
+
+u = udpportfind;
+if ~exist("u",'')
+    localPort = 5005;
+    localHost = "192.168.2.210";
+    tag = "matlab";
+
+    u = udpport("LocalPort",localPort,"LocalHost",localHost, "Tag",tag);
+end
+
+packetSize = 7 * 4;

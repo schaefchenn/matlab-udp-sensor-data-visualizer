@@ -2,11 +2,17 @@
 #include "bno055.h"
 #include "xbox.h"
 #include "led.h"
-
-#define LED_PIN     38
-#define LED_COUNT   1   // nur eine LED onboard
+#include "udp.h"
 
 bool btConnected = false;
+
+#define RINGBUFFER_SIZE 28
+
+String ringBuffer[RINGBUFFER_SIZE];
+volatile int writeIndex = 0;
+volatile bool firstHalfReady = false;
+
+unsigned long millisOffset = 0;
 
 // Core definitions (assuming you have dual-core ESP32)
 static const BaseType_t pro_cpu = 0; // protocol core
@@ -20,19 +26,23 @@ void SENSOR (void * pvParameters){
   while (1){
     float sensorValues[6];
     readBNO055Data(sensorValues);
-
-    /*
-    Serial.print("Yaw: "); Serial.print(sensorValues[0], 2);
-    Serial.print(" | Pitch: "); Serial.print(sensorValues[1], 2);
-    Serial.print(" | Roll: "); Serial.print(sensorValues[2], 2);
-    Serial.print(" | AccX: "); Serial.print(sensorValues[3], 2);
-    Serial.print(" | AccY: "); Serial.print(sensorValues[4], 2);
-    Serial.print(" | AccZ: "); Serial.println(sensorValues[5], 2);
-    */
-
+    
     vTaskDelay(100 / portTICK_PERIOD_MS); // 100Hz
   }
 }
+
+void UDP (void * pvParameters){
+  int readIndex = 0;
+  while (1){
+    if (readIndex != writeIndex) {
+      String msg = ringBuffer[readIndex] + "\n";
+      sendUdpPacket(msg.c_str());
+      readIndex = (readIndex + 1) % RINGBUFFER_SIZE;
+    }
+    vTaskDelay(1 / portTICK_PERIOD_MS); // kleine Pause
+  }
+}
+
 
 void CONTROL (void * pvParameters){
   float axes[6];
@@ -40,10 +50,6 @@ void CONTROL (void * pvParameters){
 
   while (1){
     xboxOnLoop(axes, buttons, btConnected);
-    Serial.print("LHx: " + String(axes[0])); Serial.print(" | LHy: " + String(axes[1]));
-    Serial.print(" | RHx: " + String(axes[2])); Serial.print(" | RHy: " + String(axes[3]));
-    Serial.print(" | LT: " + String(axes[4])); Serial.print(" | RT: " + String(axes[5]));
-    Serial.print(" | A pressed: "); Serial.println(buttons[0]);
     vTaskDelay(10/ portTICK_PERIOD_MS); // 100Hz
   }
 }
@@ -64,11 +70,17 @@ void LED (void * pvParameters){
 
 void setup() {
   Serial.begin(115200);
-  vTaskDelay(2000 / portTICK_PERIOD_MS);
+  while (!Serial) {
+    vTaskDelay(10 / portTICK_PERIOD_MS);
+  }
+
+  Serial.println("Serial ready...");
 
   initLED();
   setupXboxController();
   setupBNO055();
+  connectToWiFi();
+  setupUdp();
 
   // Start CANcommunication (priority set to 1, 0 is the lowest priority)
   xTaskCreatePinnedToCore(SENSOR,                                         // Function to be called
@@ -86,7 +98,16 @@ void setup() {
                           NULL,                                           // Parameter to pass to function
                           2,                                              // Increased priority
                           NULL,                                           // Task handle
-                          app_cpu);                                       // Assign to protocol core
+                          pro_cpu);                                       // Assign to protocol core
+  
+  // Start CANcommunication (priority set to 1, 0 is the lowest priority)
+  xTaskCreatePinnedToCore(UDP,                                        // Function to be called
+                          "Send Data over UDP",                          // Name of task
+                          8192,                                           // Increased stack size
+                          NULL,                                           // Parameter to pass to function
+                          2,                                              // Increased priority
+                          NULL,                                           // Task handle
+                          pro_cpu);                                       // Assign to protocol core
 
   // Start CANcommunication (priority set to 1, 0 is the lowest priority)
   xTaskCreatePinnedToCore(LED,                                            // Function to be called
