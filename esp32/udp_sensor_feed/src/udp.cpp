@@ -1,6 +1,6 @@
 #include "udp.h"
 
-const char* ssid     = "vehicle_ap";
+const char* ssid     = "vehicle_access_point";
 const char* password = "nohalfsends";
 
 const int udpPort = 5005;
