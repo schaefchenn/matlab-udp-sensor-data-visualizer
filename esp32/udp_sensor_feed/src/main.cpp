@@ -40,7 +40,7 @@ void SENSOR (void * pvParameters){
       ringBuffer[writeIndex][i + 1] = sensorValues[i];
     }
     writeIndex = (writeIndex + 1) % RINGBUFFER_SIZE;
-    vTaskDelay(1 / portTICK_PERIOD_MS); // 100Hz
+    vTaskDelay(10 / portTICK_PERIOD_MS); // 100Hz
   }
 }
 
