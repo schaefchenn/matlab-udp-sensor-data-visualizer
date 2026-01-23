@@ -20,14 +20,12 @@ TaskHandle_t Task2;
 
 void UDP (void * pvParameters){
   int readIndex = 0;
-
-  Serial.println("Client connected — starting UDP stream");
   while (1){
     if (readIndex != writeIndex) {
       sendUdpPacket((uint8_t*)ringBuffer[readIndex], sizeof(float) * 7);
       readIndex = (readIndex + 1) % RINGBUFFER_SIZE;
     }
-    vTaskDelay(5 / portTICK_PERIOD_MS);
+    vTaskDelay(20 / portTICK_PERIOD_MS);
   }
 }
 
@@ -42,21 +40,20 @@ void SENSOR (void * pvParameters){
       ringBuffer[writeIndex][i + 1] = sensorValues[i];
     }
     writeIndex = (writeIndex + 1) % RINGBUFFER_SIZE;
-    vTaskDelay(20 / portTICK_PERIOD_MS); // 100Hz
+    vTaskDelay(100 / portTICK_PERIOD_MS); // 100Hz
   }
 }
 
 void setup() {
   // Initialize serial communication at 115200 baud rate
   Serial.begin(115200);
-  Serial.println("Starting...");
 
   // Wait a moment to start (so we don't miss Serial output)
   vTaskDelay(2000 / portTICK_PERIOD_MS);
   Serial.println("Starting...");
   pinMode(LED_BUILTIN, OUTPUT);
   setupBNO055();
-  setupWiFiAP();
+  connectToWiFi();
   setupUdp();
   
   digitalWrite(LED_BUILTIN, HIGH);
@@ -69,8 +66,8 @@ void setup() {
                           8192,                                         // Increased stack size
                           NULL,                                         // Parameter to pass to function
                           2,                                            // Increased priority
-                          &Task1,                                         // Task handle
-                          pro_cpu);
+                          NULL,                                         // Task handle
+                          app_cpu);
 
   // Start CANcommunication (priority set to 1, 0 is the lowest priority)
   xTaskCreatePinnedToCore(SENSOR,                                       // Function to be called
@@ -78,8 +75,8 @@ void setup() {
                           8192,                                         // Increased stack size
                           NULL,                                         // Parameter to pass to function
                           2,                                            // Increased priority
-                          &Task2,                                       // Task handle
-                          app_cpu);                                     // Assign to protocol core  
+                          NULL,                                         // Task handle
+                          app_cpu);                                     // Assign to protocol core 
 }
 
 void loop() {

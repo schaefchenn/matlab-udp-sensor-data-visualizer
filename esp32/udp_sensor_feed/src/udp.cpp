@@ -1,40 +1,35 @@
-#include "udp.h"
+#include <udp.h>
 
-const char* ssid     = "vehicle_access_point";
-const char* password = "nohalfsends";
-
-const int udpPort = 5005;
+// Wi-Fi & UDP
+const char* ssid     = "WLAN-448466";
+const char* password = "37917074502947442992";
+const char* udpAddress = "192.168.2.224"; // PC IP
+const int remotePort = 5005;              // PC hört hier
 WiFiUDP udp;
 
-// IP-Konfiguration für Access Point
-IPAddress local_ip(192,168,4,1);
-IPAddress gateway(192,168,4,1);
-IPAddress subnet(255,255,255,0);
+void connectToWiFi() {
+    Serial.print("Connecting to ");
+    Serial.println(ssid);
+    
+    WiFi.begin(ssid, password);
+    while (WiFi.status() != WL_CONNECTED) {
+        delay(500);
+        Serial.print(".");
+    }
 
-// Ziel-IP: Laptop (Client)
-IPAddress udpTargetIP(192,168,4,2);   // ← WICHTIG
-
-void setupWiFiAP() {
-    Serial.println("Starting ESP32 as Access Point...");
-
-    WiFi.mode(WIFI_AP);
-    WiFi.softAP(ssid, password);
-    WiFi.softAPConfig(local_ip, gateway, subnet);
-
-    delay(100);
-
-    Serial.print("AP IP address: ");
-    Serial.println(WiFi.softAPIP());
+    Serial.println("\nWiFi connected. IP: ");
+    Serial.println(WiFi.localIP());
 }
 
 void setupUdp() {
-    udp.begin(udpPort);
-    Serial.print("UDP started on port ");
-    Serial.println(udpPort);
+    udp.begin(remotePort); // ESP32 bindet lokalen Port
 }
 
 void sendUdpPacket(const uint8_t* data, size_t len) {
-    udp.beginPacket(udpTargetIP, udpPort);
-    udp.write(data, len);
-    udp.endPacket();
+    if (udp.beginPacket(udpAddress, remotePort)) {
+        udp.write(data, len);
+        udp.endPacket();
+    } else {
+        Serial.println("UDP beginPacket failed or buffer full");
+    }
 }
