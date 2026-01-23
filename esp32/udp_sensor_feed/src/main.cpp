@@ -25,7 +25,7 @@ void UDP (void * pvParameters){
       sendUdpPacket((uint8_t*)ringBuffer[readIndex], sizeof(float) * 7);
       readIndex = (readIndex + 1) % RINGBUFFER_SIZE;
     }
-    vTaskDelay(20 / portTICK_PERIOD_MS);
+    vTaskDelay(1 / portTICK_PERIOD_MS);
   }
 }
 
@@ -40,7 +40,7 @@ void SENSOR (void * pvParameters){
       ringBuffer[writeIndex][i + 1] = sensorValues[i];
     }
     writeIndex = (writeIndex + 1) % RINGBUFFER_SIZE;
-    vTaskDelay(100 / portTICK_PERIOD_MS); // 100Hz
+    vTaskDelay(10 / portTICK_PERIOD_MS); // 100Hz
   }
 }
 
