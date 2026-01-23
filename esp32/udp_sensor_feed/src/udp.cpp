@@ -1,8 +1,8 @@
 #include <udp.h>
 
 // Wi-Fi & UDP
-const char* ssid     = "WLAN-448466";
-const char* password = "37917074502947442992";
+const char* ssid     = "your ssid";
+const char* password = "your password";
 const char* udpAddress = "192.168.2.224"; // PC IP
 const int remotePort = 5005;              // PC hört hier
 WiFiUDP udp;
